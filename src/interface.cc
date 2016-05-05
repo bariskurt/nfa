@@ -1,18 +1,10 @@
-#include "net_interface.cc"
+#include "pnet/interface.h"
+#include "pnet/logger.h"
+#include "pnet/time.h"
 
-#include "Logger.h"
+namespace pnet{
 
-namespace{
-
-  void NetworkInterface::stop() {
-    listening_ = false;
-  }
-
-  void NetworkInterface::close() {
-    listening_ = false;
-  }
-
-    // (1) Try to open a live interface.
+  // (1) Try to open a live interface.
   // (2) If (1) fails, try to open a pcap file
   // (3) Fatal error if (1) & (2) fails.
   PcapInterface::PcapInterface(const std::string &dev) {
@@ -34,12 +26,14 @@ namespace{
     }
   }
 
+  PcapInterface::~PcapInterface(){}
+
   void PcapInterface::start(){
 
     const u_char *pkt_data;
     struct pcap_pkthdr *pkthdr;
 
-    Logger::STDOUT("NetworkListener > Start Time = " + Time::Now());
+    STDOUT("NetworkListener > Start Time = " + Time::now());
     listening_ = true;
     while(listening_) {
       switch(pcap_next_ex(pcap_handle_, &pkthdr, &pkt_data)){

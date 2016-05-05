@@ -1,10 +1,14 @@
 #include <iostream>
 
-#include "pnet/time.h"
+#include "pnet/logger.h"
+#include "pnet/interface.h"
 
-int main(){
+using namespace pnet;
 
-  std::cout << "Hello\n";
+int main(int argc, char* argv[]){
+
+  PcapInterface net_iface = PcapInterface(argv[1]);
+  net_iface.start();
 
   return 0;
 }
