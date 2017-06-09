@@ -26,7 +26,7 @@ namespace pnet {
   namespace utils {
 
     // Check whether the string ends with one of the given extensions.
-    bool ends_with(std::string str, std::vector<std::string> extensions) {
+    bool stringEndsWith(std::string str, std::vector<std::string> extensions) {
       for(auto &ext : extensions){
         std::regex e("(.*)" + ext);
         if (std::regex_match(str, e)){
@@ -37,7 +37,7 @@ namespace pnet {
     }
 
     // Check whether the given directory exists.
-    bool dir_exists(std::string dirname) {
+    bool directoryExists(std::string dirname) {
       DIR *dir = opendir(dirname.c_str());
       if (dir) {
         closedir(dir);
@@ -47,7 +47,7 @@ namespace pnet {
     }
 
     // Check whether the given file exists.
-    bool file_exists(std::string filename) {
+    bool fileExists(std::string filename) {
       FILE *file_ = fopen(filename.c_str(), "rb");
       if (!file_) {
         return false;
@@ -57,7 +57,7 @@ namespace pnet {
     }
 
     // Create a valid path name from directory and filename.
-    std::string path(std::string dirname, std::string filename){
+    std::string pathJoin(std::string dirname, std::string filename){
       if(dirname.back()=='/'){
         return dirname + filename;
       } else {
@@ -72,13 +72,13 @@ namespace pnet {
     std::vector<std::string> ls(std::string dirname, bool fullpath,
                                 std::vector<std::string> extensions) {
       std::vector<std::string> files;
-      if( dir_exists(dirname)){
+      if( directoryExists(dirname)){
         DIR *dir = opendir(dirname.c_str());
         struct dirent *dp;
         while ((dp = readdir (dir)) != NULL) {
-          if(ends_with(dp->d_name, extensions)){
+          if(stringEndsWith(dp->d_name, extensions)){
             if(fullpath){
-              files.push_back(path(dirname, dp->d_name));
+              files.push_back(pathJoin(dirname, dp->d_name));
             } else {
               files.push_back(dp->d_name);
             }
@@ -125,15 +125,15 @@ namespace pnet {
       return !system(cmd.c_str());
     }
 
-    void find_or_create(const std::string &dir_name){
-      if(!dir_exists(dir_name) && !mkdir(dir_name)){
+    void findOrCreate(const std::string &dir_name){
+      if(!directoryExists(dir_name) && !mkdir(dir_name)){
         FATAL("Cannot find or create directory : " + dir_name);
       }
     }
 
     // Returns a valid file pointer for the file with full path 'filename'
     // Gives FATAL ERROR and halts if the file cannot be opened.
-    FILE* fopen_or_die(std::string filename, std::string format) {
+    FILE* fopenOrDie(std::string filename, std::string format) {
       FILE *file = fopen(filename.c_str(), format.c_str());
       ASSERT_TRUE(file, "Cannot open file: " + filename);
       return file;

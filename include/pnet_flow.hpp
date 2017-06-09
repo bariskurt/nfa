@@ -91,7 +91,7 @@ namespace pnet {
       }
 
       // Pretty formats packet info into a string.
-      std::string to_string() const {
+      std::string toString() const {
         char buffer[250];
         std::sprintf(buffer, "%-15s\t%5d\t",
                      inet_ntoa(ip_src), ntohs(port_src));
@@ -100,11 +100,11 @@ namespace pnet {
         std::sprintf(buffer+strlen(buffer), "%2d\t%hu\t%4hu\t",
                      protocol, flags, size);
         std::sprintf(buffer+strlen(buffer), "%s",
-                     t_arrival.to_string().c_str());
+                     t_arrival.toString().c_str());
         return std::string(buffer);
       }
 
-      bool from_string(std::string source){
+      bool fromString(std::string source){
 
         std::istringstream sin(source);
         std::string tmp;
@@ -145,7 +145,7 @@ namespace pnet {
       //    - compressed: for compressed storage.
       PacketRecorder(const std::string &output_dir_,
                      bool compressed_ = false){
-        if(!utils::dir_exists(output_dir_)){
+        if(!utils::directoryExists(output_dir_)){
           FATAL("Recorder:: output directory does not exits: " + output_dir );
         }
         output_dir = output_dir_;
@@ -163,8 +163,8 @@ namespace pnet {
         // Save current file and open a new one.
         if (record_counter == max_records_per_file) {
           close();
-          filename = utils::path(output_dir,
-                                 packet.t_arrival.to_date() + ".pkt");
+          filename = utils::pathJoin(output_dir,
+                                     packet.t_arrival.toDateString() + ".pkt");
           out.open(filename, std::ios::binary);
           if(!out.is_open()){
             FATAL("Recorder:: cannot open file : " + filename );
@@ -210,16 +210,16 @@ namespace pnet {
       PacketReader(const std::string &filename, int64_t max_packets = -1){
 
         // Pkt file does not exist, break;
-        if( !utils::file_exists(filename) ){
+        if( !utils::fileExists(filename) ){
           FATAL("PacketReader:: file not found: " + filename );
         }
 
-        if( !utils::ends_with(filename, {"pkt", "pkt.gz"}) ){
+        if( !utils::stringEndsWith(filename, {"pkt", "pkt.gz"}) ){
           FATAL("PacketReader:: not a pkt file: "  + filename);
         }
 
         // Pkt is compressed, uncompress in temporary location;
-        is_compressed = utils::ends_with(filename, {".gz"});
+        is_compressed = utils::stringEndsWith(filename, {".gz"});
 
         // Open file:
         std::ifstream fin;
@@ -293,11 +293,11 @@ namespace pnet {
         return nbytes;
       }
 
-      Time t_first_packet(){
+      Time t_firstPacket(){
         return packets.front().t_arrival;
       }
 
-      Time t_last_packet(){
+      Time t_lastPacket(){
         return packets.back().t_arrival;
       }
 
@@ -332,7 +332,7 @@ namespace pnet {
                              packet.t_arrival);
       }
 
-      std::string to_string() const {
+      std::string toString() const {
         char buffer[500];
         std::sprintf(buffer, "%-15s\t%5d\t",
                      inet_ntoa(ip_src), ntohs(port_src));
@@ -341,9 +341,9 @@ namespace pnet {
         std::sprintf(buffer+strlen(buffer), "%2d\t%" PRIu64 "\t%" PRIu64 "\t",
                      protocol, size(), bytes());
         std::sprintf(buffer+strlen(buffer), "%s\t",
-                     packets.front().t_arrival.to_string().c_str());
+                     packets.front().t_arrival.toString().c_str());
         std::sprintf(buffer+strlen(buffer), "%s",
-                     packets.back().t_arrival.to_string().c_str());
+                     packets.back().t_arrival.toString().c_str());
         return std::string(buffer);
       }
 
@@ -368,7 +368,7 @@ namespace pnet {
       //    - compressed: for compressed storage.
       FlowRecorder(const std::string &output_dir_,
                    bool compressed_ = false){
-        if(!utils::dir_exists(output_dir_)){
+        if(!utils::directoryExists(output_dir_)){
           FATAL("FlowRecorder:: output directory does not exits: "
                 + output_dir );
         }
@@ -387,15 +387,15 @@ namespace pnet {
         // Save current file and open a new one.
         if (record_counter == max_records_per_file) {
           close();
-          filename = utils::path(output_dir,
-                                 flow.packets.back().t_arrival.to_date()  + ".flw");
+          filename = utils::pathJoin(output_dir,
+                       flow.packets.back().t_arrival.toDateString() + ".flw");
           out.open(filename, std::ios::out);
           if(!out.is_open()){
             FATAL("FlowRecorder:: cannot open file : " + filename );
           }
           record_counter = 0;
         }
-        out << flow.to_string() << std::endl;
+        out << flow.toString() << std::endl;
         ++record_counter;
       }
 
@@ -437,9 +437,7 @@ namespace pnet {
 
       // Remove and destroy arbitrary Flow by its pointer
       void del(Flow *flow){
-        if(!flow){
-          FATAL("FlowQueue:: Trying to remove null Flow*");
-        }
+        ASSERT_TRUE(flow, "FlowQueue:: Trying to remove null Flow*");
         remove(flow);
         delete flow;
       }
@@ -447,9 +445,7 @@ namespace pnet {
       // Take a Flow from an arbitrary position and push it at the end
       // of the queue
       void move_back(Flow *flow){
-        if(!flow){
-          FATAL("FlowQueue:: Trying to put_back null Flow*");
-        }
+        ASSERT_TRUE(flow, "FlowQueue:: Trying to put_back null Flow*");
         remove(flow);
         insert(flow);
       }
@@ -498,7 +494,7 @@ namespace pnet {
       friend std::ostream& operator<<(std::ostream &out, const FlowQueue& q){
         Flow *flow = q.head;
         while(flow ){
-          out << flow->to_string() << "  ";
+          out << flow->toString() << "  ";
           flow = flow ->next;
         }
         return out;
@@ -553,7 +549,7 @@ namespace pnet {
                                       const FlowTable &ftable) {
         Flow* current = ftable.flows.head;
         while(current){
-          out << current->to_string() << std::endl;
+          out << current->toString() << std::endl;
           current = current->next;
         }
         return out;
@@ -561,7 +557,7 @@ namespace pnet {
 
       // Iterates over the FlowQueue and collects FSD statistics.
       // If no protocol is given, overall FSD is returned.
-      std::vector<uint64_t> current_fsd(uint16_t proto = 0) const{
+      std::vector<uint64_t> getCurrentFSD(uint16_t proto = 0) const{
         std::vector<uint64_t> counts(NUM_FSD_BINS,0);
         Flow *current = flows.head;
         while(current) {
@@ -584,7 +580,7 @@ namespace pnet {
         ++packet_counter;
 
         // Clear expired flows.
-        expire_flows(pkt.t_arrival);
+        expireFlows(pkt.t_arrival);
 
         Flow *flow = find(pkt);
         if(flow){
@@ -601,7 +597,7 @@ namespace pnet {
       }
 
       // Remove all expired flows from the table.
-      void expire_flows(Time t_now) {
+      void expireFlows(Time t_now) {
         while (!flows.empty()) {
           if (flows.head->expired(t_now)) {
             // record flow just before deleting from table:
@@ -624,7 +620,7 @@ namespace pnet {
         return it->second;
       }
 
-      Time up_time(){
+      Time upTime(){
         return t_last_packet - t_first_packet;
       }
 

@@ -98,7 +98,7 @@ namespace pnet {
       }
 
       // Time to string of format "YYYY-MM-DD_HH:MM::SS.mmmmmm"
-      std::string date_str() const {
+      std::string toDateString() const {
         time_t t = sec;
         char date[256], microseconds_[8];
         strftime(date, sizeof(date), "%F_%T", localtime(&t));
@@ -107,14 +107,14 @@ namespace pnet {
       }
 
       // Time to string of format "ssssssssss.mmmmmm"
-      std::string str() const {
+      std::string toString() const {
         char buffer[250];
         snprintf(buffer, 32, "%010u.%06u", sec, usec);
         return std::string(buffer);
       }
 
       // Returns microseconds from the EPOCH for the current moment.
-      static Time Now() {
+      static Time now() {
         struct timespec ts;
 #ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
         clock_serv_t cclock;
@@ -146,12 +146,12 @@ namespace pnet {
 
       // Start timer.
       void tic() {
-        t_start = Time::Now();
+        t_start = Time::now();
       }
 
       // Return time elapsed since last tic.
       Time toc() {
-        return  Time::Now()  - t_start;
+        return  Time::now()  - t_start;
       }
 
     private:
@@ -188,7 +188,7 @@ namespace pnet {
         std::cout << std::string(current_percentage, '=')
                   << std::string(100-current_percentage, ' ')
                   << "] Elapsed time: "
-                  << timer.toc().str() << " seconds.";
+                  << timer.toc().toString() << " seconds.";
         if( current_percentage == 100 ){
           std::cout << std::endl;
         }

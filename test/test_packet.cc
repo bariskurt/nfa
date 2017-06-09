@@ -16,12 +16,12 @@ void test_read_write(){
 
 
   pnet::Packet packet2;
-  packet2.from_string(packet.to_string());
+  packet2.fromString(packet.toString());
 
-  if (packet.to_string() != packet2.to_string()){
+  if (packet.toString() != packet2.toString()){
     std::cout << "ReadWriteTest FAILED !\n";
-    std::cout << "source: " << packet.to_string() << std::endl;
-    std::cout << "dest  : " << packet2.to_string()  << std::endl;
+    std::cout << "source: " << packet.toString() << std::endl;
+    std::cout << "dest  : " << packet2.toString()  << std::endl;
   }
 
   std::cout << "OK.\n" ;

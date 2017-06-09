@@ -11,6 +11,7 @@ add_subdirectory(test/)
 # testing
 enable_testing()
 add_test(test_packet ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_packet)
+add_test(test_packet ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_logger)
 
 # Installation
 set(INSTALL_DIR /usr/local/include/pnet)

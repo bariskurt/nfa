@@ -57,7 +57,7 @@ namespace pnet {
     private:
       Logger(std::string filename) {
         filename_ = filename;
-        file_ = utils::fopen_or_die(filename_, "w");
+        file_ = utils::fopenOrDie(filename_, "w");
         setvbuf(file_, nullptr, _IONBF, 0);
       }
 
